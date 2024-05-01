@@ -1,0 +1,24 @@
+-- Table: public.md_post_comments
+
+-- DROP TABLE IF EXISTS public.md_post_comments;
+
+CREATE TABLE IF NOT EXISTS public.md_post_comments
+(
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    reply_id integer,
+    post_id integer NOT NULL,
+    post_user_id integer NOT NULL,
+    comment_user_id integer NOT NULL,
+    comment_desc text COLLATE pg_catalog."default",
+    is_active integer,
+    likes_count integer,
+    dislikes_count integer,
+    tagged_user integer[],
+    created_date timestamp without time zone,
+    updated_date timestamp without time zone
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.md_post_comments
+    OWNER to fijoliadmin;

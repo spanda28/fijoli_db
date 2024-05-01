@@ -1,0 +1,21 @@
+-- Table: public.md_user_documents
+
+-- DROP TABLE IF EXISTS public.md_user_documents;
+
+CREATE TABLE IF NOT EXISTS public.md_user_documents
+(
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    user_id integer NOT NULL,
+    document_category integer,
+    document_name character varying(500) COLLATE pg_catalog."default",
+    document_desc text COLLATE pg_catalog."default",
+    upload_path character varying(200) COLLATE pg_catalog."default",
+    is_active integer,
+    created_date timestamp without time zone,
+    updated_date timestamp without time zone
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.md_user_documents
+    OWNER to fijoliadmin;

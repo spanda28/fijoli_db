@@ -1,0 +1,21 @@
+-- Table: public.md_user_work_details
+
+-- DROP TABLE IF EXISTS public.md_user_work_details;
+
+CREATE TABLE IF NOT EXISTS public.md_user_work_details
+(
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    user_id integer NOT NULL,
+    mode_of_training character varying(100) COLLATE pg_catalog."default",
+    session_currency character varying(10) COLLATE pg_catalog."default",
+    price_per_session numeric(10,3),
+    price_per_month numeric(10,3),
+    is_active integer,
+    created_date date,
+    updated_date timestamp without time zone
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.md_user_work_details
+    OWNER to fijoliadmin;

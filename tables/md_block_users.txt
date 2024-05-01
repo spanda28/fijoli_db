@@ -1,0 +1,18 @@
+-- Table: public.md_block_users
+
+-- DROP TABLE IF EXISTS public.md_block_users;
+
+CREATE TABLE IF NOT EXISTS public.md_block_users
+(
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    logged_in_user_id integer NOT NULL,
+    blocked_user_id integer NOT NULL,
+    is_active integer,
+    created_date timestamp without time zone,
+    updated_date timestamp without time zone
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.md_block_users
+    OWNER to fijoliadmin;

@@ -1,0 +1,29 @@
+-- FUNCTION: public.getpostlikedislikecount()
+
+-- DROP FUNCTION IF EXISTS public.getpostlikedislikecount();
+
+CREATE OR REPLACE FUNCTION public.getpostlikedislikecount(
+	)
+    RETURNS TABLE(post_id integer, like_count bigint, dislike_count bigint) 
+    LANGUAGE 'sql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+    ROWS 1000
+
+AS $BODY$
+with dislike as (
+	select count(*) as dislike_count, post_id from public.md_post_likes_dislikes
+	where is_active = 1 and reaction = 0 group by post_id
+), 
+like1 as (
+	select count(*) as like_count, post_id from public.md_post_likes_dislikes
+	where is_active = 1 and reaction = 1 group by post_id
+)
+select coalesce(like1.post_id, dislike.post_id) as post_id, coalesce(like1.like_count, 0) as like_count, 
+coalesce(dislike.dislike_count, 0) as dislike_count
+from like1 
+full outer join dislike on like1.post_id = dislike.post_id
+$BODY$;
+
+ALTER FUNCTION public.getpostlikedislikecount()
+    OWNER TO postgres;

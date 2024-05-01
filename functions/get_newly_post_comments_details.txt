@@ -1,0 +1,75 @@
+-- FUNCTION: public.get_newly_post_comments_details(integer, integer, integer)
+
+-- DROP FUNCTION IF EXISTS public.get_newly_post_comments_details(integer, integer, integer);
+
+CREATE OR REPLACE FUNCTION public.get_newly_post_comments_details(
+	param1 integer,
+	param2 integer,
+	param3 integer)
+    RETURNS json
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
+DECLARE 
+  result JSON;
+BEGIN
+
+WITH RECURSIVE subordinate AS (
+    SELECT  id,
+            post_id,
+            post_user_id,
+            reply_id,
+            comment_user_id,
+            comment_desc,
+	        updated_date,
+            0 AS level
+    FROM md_post_comments
+    WHERE post_id = param1
+    AND id=param2 AND is_active = 1 AND comment_user_id = param3
+ 
+    UNION ALL
+ 
+    SELECT  e.id,
+            e.post_id,
+            e.post_user_id,
+            e.reply_id,
+            e.comment_user_id,
+            e.comment_desc,
+			e.updated_date,
+            level + 1
+    FROM md_post_comments e
+JOIN subordinate s
+ON e.reply_id = s.id
+AND e.post_id = s.post_id
+WHERE e.post_id = param1 
+AND e.is_active = 1
+)
+
+SELECT json_agg(row_to_json(t)) INTO RESULT 
+FROM(SELECT 
+s.id,
+    s.post_id, 
+    s.post_user_id,
+    s.comment_user_id,
+    s.comment_desc,
+    m.comment_user_id AS direct_comment_user_id,
+    m.comment_desc AS direct_comment_desc,
+	s.updated_date, 
+	u.user_name,
+	u.whatsapp_number,
+    s.level
+FROM subordinate s
+JOIN md_post_comments m
+ON s.post_id = m.post_id AND s.reply_id = m.id
+JOIN public.md_user_table u
+ON s.comment_user_id = u.user_id
+WHERE s.post_id=param1
+ORDER BY level, s.updated_date)t; 
+
+  RETURN result;
+END 
+$BODY$;
+
+ALTER FUNCTION public.get_newly_post_comments_details(integer, integer, integer)
+    OWNER TO postgres;

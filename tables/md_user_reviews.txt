@@ -1,0 +1,23 @@
+-- Table: public.md_user_reviews
+
+-- DROP TABLE IF EXISTS public.md_user_reviews;
+
+CREATE TABLE IF NOT EXISTS public.md_user_reviews
+(
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    user_id integer NOT NULL,
+    reviewer_user_id integer NOT NULL,
+    user_rating numeric(2,1),
+    review_desc text COLLATE pg_catalog."default",
+    reviewer_supported_doc_path character(100) COLLATE pg_catalog."default",
+    reply_desc text COLLATE pg_catalog."default",
+    reply_supported_doc_path character(100) COLLATE pg_catalog."default",
+    is_active integer,
+    created_date timestamp without time zone,
+    updated_date timestamp without time zone
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.md_user_reviews
+    OWNER to fijoliadmin;

@@ -1,0 +1,43 @@
+-- FUNCTION: public.get_post_comments_summary(integer)
+
+-- DROP FUNCTION IF EXISTS public.get_post_comments_summary(integer);
+
+CREATE OR REPLACE FUNCTION public.get_post_comments_summary(
+	param1 integer)
+    RETURNS json
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
+DECLARE 
+  result JSON;
+BEGIN
+
+WITH RECURSIVE CommentHierarchy AS (
+  SELECT id AS root_reply_id, id AS reply_id, post_id, post_user_id, comment_user_id, comment_desc, created_date, updated_date, 0 AS level
+  FROM md_post_comments
+  WHERE reply_id IS NULL
+  AND post_id=param1
+  AND is_active = 1
+  
+  UNION ALL
+  
+  SELECT ch.root_reply_id, c.id, ch.post_id, ch.post_user_id, ch.comment_user_id, ch.comment_desc, ch.created_date, ch.updated_date, ch.level + 1
+  FROM md_post_comments c
+  JOIN CommentHierarchy ch ON c.reply_id = ch.reply_id
+  WHERE ch.post_id=param1 and c.is_active = 1
+)
+
+SELECT json_agg(row_to_json(t)) INTO RESULT 
+FROM(SELECT root_reply_id, post_id, post_user_id, comment_user_id, comment_desc, CommentHierarchy.updated_date, user_name, whatsapp_number, COUNT(*)-1 AS count_reply_comments
+FROM CommentHierarchy, public.md_user_table
+where CommentHierarchy.comment_user_id = public.md_user_table.user_id
+GROUP BY root_reply_id,post_id, post_user_id, comment_user_id, comment_desc, CommentHierarchy.updated_date, user_name, whatsapp_number
+order by CommentHierarchy.updated_date)t; 
+
+  RETURN result;
+END 
+$BODY$;
+
+ALTER FUNCTION public.get_post_comments_summary(integer)
+    OWNER TO postgres;
